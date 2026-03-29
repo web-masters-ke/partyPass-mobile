@@ -1,0 +1,20 @@
+<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- outer badge ring with notched edge -->
+  <circle cx="32" cy="30" r="28" fill="#F9A825"/>
+  <circle cx="32" cy="30" r="24" fill="#FDD835"/>
+  <!-- notch ring (gear effect via star polygon) -->
+  <path d="M32 3 L35 10 L42 6 L43 13 L50 12 L49 19 L56 21 L53 27 L59 31 L54 36 L58 42 L52 44 L53 51 L47 51 L44 57 L38 55 L32 60 L26 55 L20 57 L17 51 L11 51 L12 44 L6 42 L10 36 L5 31 L11 27 L8 21 L15 19 L14 12 L21 13 L22 6 L29 10 Z" fill="#F57F17" opacity="0.5"/>
+  <!-- inner gold disc -->
+  <circle cx="32" cy="30" r="20" fill="#FFC107"/>
+  <circle cx="32" cy="30" r="17" fill="#FFD54F"/>
+  <!-- red ribbon banner -->
+  <rect x="8"  y="27" width="48" height="11" rx="2" fill="#C62828"/>
+  <!-- ribbon tails -->
+  <polygon points="8,27  8,38  3,32.5"  fill="#B71C1C"/>
+  <polygon points="56,27 56,38 61,32.5" fill="#B71C1C"/>
+  <!-- star on badge (bold 5-point) -->
+  <path d="M32 11 L34.9 19.6 L44 19.6 L36.6 25 L39.4 33.6 L32 28.2 L24.6 33.6 L27.4 25 L20 19.6 L29.1 19.6 Z" fill="#F57F17" opacity="0.9"/>
+  <path d="M32 13 L34.4 20.5 L42.4 20.5 L36 25.4 L38.5 32.9 L32 28 L25.5 32.9 L28 25.4 L21.6 20.5 L29.6 20.5 Z" fill="#FFD54F"/>
+  <!-- ribbon highlight lines -->
+  <rect x="8"  y="30" width="48" height="1.5" rx="0.75" fill="white" opacity="0.15"/>
+</svg>

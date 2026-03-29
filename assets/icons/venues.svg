@@ -1,0 +1,18 @@
+<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- shadow -->
+  <ellipse cx="32" cy="61" rx="10" ry="3" fill="#1A237E" opacity="0.2"/>
+  <!-- pin body -->
+  <path d="M32 4 C20 4 11 13 11 24 C11 38 32 60 32 60 C32 60 53 38 53 24 C53 13 44 4 32 4 Z" fill="#4527A0"/>
+  <!-- pin inner circle -->
+  <circle cx="32" cy="24" r="13" fill="#7E57C2"/>
+  <circle cx="32" cy="24" r="10" fill="#311B92"/>
+  <!-- music note inside pin -->
+  <!-- note head -->
+  <ellipse cx="30" cy="29" rx="4" ry="3" fill="white" opacity="0.9" transform="rotate(-15 30 29)"/>
+  <!-- note stem -->
+  <rect x="33.5" y="18" width="2.5" height="12" rx="1.25" fill="white" opacity="0.9"/>
+  <!-- note flag -->
+  <path d="M36 18 Q42 20 40 26" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.9"/>
+  <!-- pin highlight -->
+  <ellipse cx="24" cy="18" rx="4" ry="5" fill="white" opacity="0.15" transform="rotate(-20 24 18)"/>
+</svg>

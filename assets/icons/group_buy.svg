@@ -1,0 +1,18 @@
+<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- person left -->
+  <circle cx="14" cy="22" r="8"  fill="#C2185B"/>
+  <path d="M4  50 Q4  36 14 36 Q24 36 24 50 Z" fill="#C2185B"/>
+  <!-- person right -->
+  <circle cx="50" cy="22" r="8"  fill="#C2185B"/>
+  <path d="M40 50 Q40 36 50 36 Q60 36 60 50 Z" fill="#C2185B"/>
+  <!-- person center (front, bigger) -->
+  <circle cx="32" cy="18" r="10" fill="#AD1457"/>
+  <path d="M18 54 Q18 38 32 38 Q46 38 46 54 Z" fill="#AD1457"/>
+  <!-- tag badge -->
+  <circle cx="32" cy="46" r="10" fill="#880E4F"/>
+  <circle cx="32" cy="46" r="8"  fill="#AD1457"/>
+  <!-- % symbol via two circles + line -->
+  <circle cx="28.5" cy="42.5" r="2" fill="white" opacity="0.9"/>
+  <circle cx="35.5" cy="49.5" r="2" fill="white" opacity="0.9"/>
+  <line x1="27" y1="51" x2="37" y2="42" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+</svg>

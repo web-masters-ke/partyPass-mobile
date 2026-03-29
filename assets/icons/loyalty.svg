@@ -1,0 +1,13 @@
+<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- big heart -->
+  <path d="M32 54 C32 54 8 40 8 24 C8 16 14 10 22 10 C26 10 30 12 32 16 C34 12 38 10 42 10 C50 10 56 16 56 24 C56 40 32 54 32 54 Z" fill="#FF8C00"/>
+  <!-- inner heart lighter -->
+  <path d="M32 47 C32 47 14 36 14 24 C14 19 17.5 14.5 22 14.5 C25 14.5 28 16.5 32 20.5 C36 16.5 39 14.5 42 14.5 C46.5 14.5 50 19 50 24 C50 36 32 47 32 47 Z" fill="#FFA726" opacity="0.5"/>
+  <!-- shine -->
+  <ellipse cx="24" cy="19" rx="4" ry="5" fill="white" opacity="0.25" transform="rotate(-30 24 19)"/>
+  <!-- star sparkles -->
+  <circle cx="14" cy="12" r="2.5" fill="#FDD835" opacity="0.9"/>
+  <circle cx="50" cy="10" r="2"   fill="#FDD835" opacity="0.8"/>
+  <circle cx="54" cy="30" r="1.5" fill="#FDD835" opacity="0.7"/>
+  <circle cx="10" cy="34" r="1.5" fill="#FDD835" opacity="0.7"/>
+</svg>

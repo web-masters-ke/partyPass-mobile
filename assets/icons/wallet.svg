@@ -1,0 +1,20 @@
+<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- shadow -->
+  <rect x="8" y="20" width="50" height="34" rx="7" fill="#0D47A1" opacity="0.25"/>
+  <!-- wallet body -->
+  <rect x="6" y="17" width="50" height="34" rx="7" fill="#1E88E5"/>
+  <!-- top flap -->
+  <rect x="6" y="17" width="50" height="14" rx="7" fill="#1565C0"/>
+  <rect x="6" y="24" width="50" height="7"  fill="#1565C0"/>
+  <!-- card sticking up -->
+  <rect x="30" y="8"  width="22" height="16" rx="4" fill="#FDD835"/>
+  <rect x="30" y="16" width="22" height="5"  rx="2" fill="#F9A825"/>
+  <circle cx="34" cy="13" r="3" fill="#F9A825" opacity="0.7"/>
+  <!-- coin pocket circle -->
+  <circle cx="43" cy="38" r="9"  fill="#1565C0"/>
+  <circle cx="43" cy="38" r="7"  fill="#1976D2"/>
+  <circle cx="43" cy="38" r="4.5" fill="#FDD835" opacity="0.9"/>
+  <!-- $ sign replaced with bold line (text unreliable at small size) -->
+  <rect x="42" y="33.5" width="2" height="9"  rx="1" fill="#F57F17"/>
+  <rect x="39.5" y="36" width="7" height="2"  rx="1" fill="#F57F17"/>
+</svg>

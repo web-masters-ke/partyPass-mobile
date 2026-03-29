@@ -1,0 +1,24 @@
+<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- shadow -->
+  <rect x="8" y="21" width="50" height="26" rx="7" fill="#B71C1C" opacity="0.3"/>
+  <!-- body -->
+  <rect x="6" y="18" width="50" height="26" rx="7" fill="#E53935"/>
+  <!-- left notch -->
+  <circle cx="6"  cy="25" r="5.5" fill="#FAF9F6"/>
+  <circle cx="6"  cy="39" r="5.5" fill="#FAF9F6"/>
+  <!-- right notch -->
+  <circle cx="56" cy="25" r="5.5" fill="#FAF9F6"/>
+  <circle cx="56" cy="39" r="5.5" fill="#FAF9F6"/>
+  <!-- perf line -->
+  <line x1="40" y1="18" x2="40" y2="44" stroke="white" stroke-width="2" stroke-dasharray="3 3" opacity="0.5"/>
+  <!-- stub bg -->
+  <rect x="40" y="18" width="16" height="26" rx="7" fill="#C62828"/>
+  <rect x="40" y="18" width="8"  height="26" fill="#C62828"/>
+  <!-- stub bars -->
+  <rect x="43" y="25" width="2.5" height="14" rx="1" fill="white" opacity="0.7"/>
+  <rect x="47" y="25" width="1.5" height="14" rx="0.75" fill="white" opacity="0.6"/>
+  <rect x="50" y="25" width="2.5" height="14" rx="1" fill="white" opacity="0.7"/>
+  <!-- main body star -->
+  <circle cx="22" cy="31" r="11" fill="#C62828" opacity="0.2"/>
+  <path d="M22 21 L24.4 27.8 L31.6 27.8 L25.8 32.2 L28.2 39 L22 34.6 L15.8 39 L18.2 32.2 L12.4 27.8 L19.6 27.8 Z" fill="white" opacity="0.9"/>
+</svg>

@@ -1,0 +1,76 @@
+name: partypass
+description: PartyPass — The event ticketing and gate management app.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Navigation
+  go_router: ^14.2.7
+
+  # Networking
+  dio: ^5.4.3+1
+
+  # Storage
+  shared_preferences: ^2.2.3
+  flutter_secure_storage: ^9.2.2
+
+  # Images
+  cached_network_image: ^3.3.1
+  image_picker: ^1.1.2
+
+  # QR
+  mobile_scanner: ^5.2.3
+  qr_flutter: ^4.1.0
+
+  # Utilities
+  intl: ^0.19.0
+  timeago: ^3.7.0
+  shimmer: ^3.0.0
+  lottie: ^3.1.2
+  flutter_svg: ^2.0.10+1
+  permission_handler: ^11.3.1
+  geolocator: ^12.0.0
+  url_launcher: ^6.3.0
+  share_plus: ^10.0.0
+
+  # Firebase
+  firebase_core: ^3.4.0
+  firebase_messaging: ^15.1.0
+
+  # Fonts
+  google_fonts: ^6.2.1
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.11
+  riverpod_generator: ^2.4.3
+  flutter_launcher_icons: ^0.14.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/icon/
+    - assets/icons/
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/app_icon.png"
+  adaptive_icon_background: "#121212"
+  adaptive_icon_foreground: "assets/icon/app_icon.png"
+  min_sdk_android: 21

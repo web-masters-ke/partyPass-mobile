@@ -30,7 +30,7 @@ class ClubOwnerScreen extends ConsumerWidget {
           icon: const Icon(Icons.arrow_back_ios_new, size: 20),
           onPressed: () => context.canPop() ? context.pop() : context.go('/organizer'),
         ),
-        title: Text('My Clubs', style: GoogleFonts.inter(fontWeight: FontWeight.w900)),
+        title: Text('Clubs & Venues', style: GoogleFonts.inter(fontWeight: FontWeight.w900)),
         centerTitle: false,
         actions: [
           IconButton(

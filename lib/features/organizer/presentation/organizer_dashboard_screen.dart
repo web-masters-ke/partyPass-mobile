@@ -173,7 +173,7 @@ class OrganizerDashboardScreen extends ConsumerWidget {
                   const SizedBox(width: 10),
                   _QuickLink(
                     icon: Icons.location_city_rounded,
-                    label: 'My Clubs',
+                    label: 'Clubs & Venues',
                     onTap: () => context.push('/organizer/clubs'),
                     dark: dark,
                     accent: true,

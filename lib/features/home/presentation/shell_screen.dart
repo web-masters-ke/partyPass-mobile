@@ -37,7 +37,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
   Widget build(BuildContext context) {
     final userAsync = ref.watch(currentUserProvider);
     final isOrganizer = userAsync.maybeWhen(
-      data: (u) => u?.role == 'ORGANIZER' || u?.role == 'CLUB_OWNER',
+      data: (u) => u?.role == 'ORGANIZER',
       orElse: () => false,
     );
 

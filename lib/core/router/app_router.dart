@@ -413,7 +413,7 @@ class _ShellScaffold extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(currentUserProvider);
     final role = userAsync.valueOrNull?.role ?? 'ATTENDEE';
-    final isOrganizer = role == 'ORGANIZER' || role == 'CLUB_OWNER';
+    final isOrganizer = role == 'ORGANIZER';
 
     int currentIndex;
     if (isOrganizer) {

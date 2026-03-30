@@ -89,8 +89,7 @@ class ProfileScreen extends ConsumerWidget {
                 badge: 'FREE',
                 onTap: () => context.push('/membership'),
               ),
-              if (user?.role == 'ORGANIZER' ||
-                  user?.role == 'CLUB_OWNER') ...[
+              if (user?.role == 'ORGANIZER') ...[
                 Padding(
                   padding: const EdgeInsets.fromLTRB(4, 20, 4, 8),
                   child: Text(

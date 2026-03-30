@@ -51,7 +51,7 @@ class OrganizerDashboardScreen extends ConsumerWidget {
     final eventsAsync = ref.watch(_recentEventsProvider);
     final payoutsAsync = ref.watch(_recentPayoutsProvider);
     final userAsync = ref.watch(currentUserProvider);
-    final isClubOwner = userAsync.valueOrNull?.role == 'CLUB_OWNER';
+    final isClubOwner = userAsync.valueOrNull?.role == 'ORGANIZER';
 
     return Scaffold(
       appBar: AppBar(

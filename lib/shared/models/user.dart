@@ -78,5 +78,5 @@ class User {
       };
 
   bool get isStaff =>
-      role == 'GATE_STAFF' || role == 'ORGANIZER' || role == 'ADMIN' || role == 'SUPER_ADMIN' || role == 'CLUB_OWNER';
+      role == 'GATE_STAFF' || role == 'ORGANIZER' || role == 'ADMIN' || role == 'SUPER_ADMIN';
 }

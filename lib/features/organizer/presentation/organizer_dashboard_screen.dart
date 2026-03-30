@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/date_utils.dart';
+import '../../../shared/providers/auth_provider.dart';
 
 // ---------------------------------------------------------------------------
 // Providers
@@ -49,6 +50,8 @@ class OrganizerDashboardScreen extends ConsumerWidget {
     final walletAsync = ref.watch(_walletProvider);
     final eventsAsync = ref.watch(_recentEventsProvider);
     final payoutsAsync = ref.watch(_recentPayoutsProvider);
+    final userAsync = ref.watch(currentUserProvider);
+    final isClubOwner = userAsync.valueOrNull?.role == 'CLUB_OWNER';
 
     return Scaffold(
       appBar: AppBar(
@@ -147,6 +150,36 @@ class OrganizerDashboardScreen extends ConsumerWidget {
                   ],
                 );
               },
+            ),
+            const SizedBox(height: 20),
+
+            // ── Quick links ───────────────────────────────────────────────
+            Row(
+              children: [
+                _QuickLink(
+                  icon: Icons.account_balance_wallet_rounded,
+                  label: 'Wallet',
+                  onTap: () => context.push('/organizer/wallet'),
+                  dark: dark,
+                ),
+                const SizedBox(width: 10),
+                _QuickLink(
+                  icon: Icons.group_rounded,
+                  label: 'My Team',
+                  onTap: () => context.push('/organizer/team'),
+                  dark: dark,
+                ),
+                if (isClubOwner) ...[
+                  const SizedBox(width: 10),
+                  _QuickLink(
+                    icon: Icons.location_city_rounded,
+                    label: 'My Clubs',
+                    onTap: () => context.push('/organizer/clubs'),
+                    dark: dark,
+                    accent: true,
+                  ),
+                ],
+              ],
             ),
             const SizedBox(height: 28),
 
@@ -758,6 +791,52 @@ class _ListItemShimmer extends StatelessWidget {
       decoration: BoxDecoration(
         color: dark ? kDarkSurface : kSurface,
         borderRadius: BorderRadius.circular(12),
+      ),
+    );
+  }
+}
+
+class _QuickLink extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final bool dark;
+  final bool accent;
+
+  const _QuickLink({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    required this.dark,
+    this.accent = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: accent ? kPrimary.withValues(alpha: 0.08) : (dark ? kDarkSurface : Colors.white),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: accent ? kPrimary : (dark ? kDarkBorder : kBorder)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 22, color: accent ? kPrimary : (dark ? kDarkTextPrimary : kTextPrimary)),
+              const SizedBox(height: 4),
+              Text(label,
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: accent ? kPrimary : (dark ? kDarkTextPrimary : kTextPrimary),
+                  )),
+            ],
+          ),
+        ),
       ),
     );
   }

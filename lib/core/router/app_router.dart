@@ -60,6 +60,12 @@ import '../../features/home/presentation/search_screen.dart';
 // Venues
 import '../../features/venues/presentation/venues_screen.dart';
 
+// Clubs (Club Owner portal)
+import '../../features/clubs/presentation/club_owner_screen.dart';
+import '../../features/clubs/presentation/create_venue_screen.dart';
+import '../../features/clubs/presentation/venue_management_screen.dart';
+import '../../features/clubs/presentation/create_club_night_screen.dart';
+
 // Reviews
 import '../../features/reviews/presentation/write_review_screen.dart';
 
@@ -282,6 +288,28 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/organizer/team',
         builder: (_, __) => const ManageStaffScreen(),
+      ),
+
+      // Club Owner routes
+      GoRoute(
+        path: '/organizer/clubs',
+        builder: (_, __) => const ClubOwnerScreen(),
+      ),
+      GoRoute(
+        path: '/organizer/clubs/new',
+        builder: (_, __) => const CreateVenueScreen(),
+      ),
+      GoRoute(
+        path: '/organizer/clubs/:id',
+        builder: (_, state) => VenueManagementScreen(
+          venueId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: '/organizer/clubs/:id/nights/new',
+        builder: (_, state) => CreateClubNightScreen(
+          venueId: state.pathParameters['id']!,
+        ),
       ),
 
       // Membership

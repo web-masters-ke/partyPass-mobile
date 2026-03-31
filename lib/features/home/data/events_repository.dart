@@ -9,6 +9,7 @@ class EventsRepository {
     String? category,
     String? search,
     bool? isOnline,
+    bool? isFree,
     String? status,
     int page = 1,
     int limit = 20,
@@ -19,6 +20,7 @@ class EventsRepository {
       if (category != null && category != 'All') 'category': category,
       if (search != null && search.isNotEmpty) 'search': search,
       if (isOnline != null) 'isOnline': isOnline,
+      if (isFree == true) 'isFree': true,
       'status': status ?? 'PUBLISHED',
     };
     final data =

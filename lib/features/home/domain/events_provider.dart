@@ -27,9 +27,17 @@ final featuredEventsProvider = FutureProvider<List<Event>>((ref) {
 
 final homeEventsProvider = FutureProvider<List<Event>>((ref) {
   final category = ref.watch(selectedCategoryProvider);
-  return ref.read(eventsRepositoryProvider).getEvents(
-        category: category == 'All' ? null : category,
-      );
+  final repo = ref.watch(eventsRepositoryProvider);
+
+  if (category == 'All') {
+    return repo.getEvents();
+  } else if (category == 'Free Events') {
+    return repo.getEvents(isFree: true);
+  } else if (category == 'Online') {
+    return repo.getEvents(isOnline: true);
+  } else {
+    return repo.getEvents(category: category);
+  }
 });
 
 final eventDetailProvider =

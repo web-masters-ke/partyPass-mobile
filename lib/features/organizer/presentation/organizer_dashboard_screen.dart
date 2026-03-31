@@ -595,9 +595,15 @@ class _VenueCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final photos = venue['photos'] as List?;
-    final coverUrl = photos != null && photos.isNotEmpty
-        ? (photos.first as Map<String, dynamic>)['url']?.toString()
-        : null;
+    String? coverUrl;
+    if (photos != null && photos.isNotEmpty) {
+      final first = photos.first;
+      if (first is String) {
+        coverUrl = first;
+      } else if (first is Map) {
+        coverUrl = first['url']?.toString();
+      }
+    }
     final name = venue['name']?.toString() ?? 'Unnamed';
     final city = venue['city']?.toString() ?? '';
     final capacity = venue['capacity'];

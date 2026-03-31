@@ -37,6 +37,16 @@ final _recentPayoutsProvider =
   return items.cast<Map<String, dynamic>>();
 });
 
+final _myVenuesProvider =
+    FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final data = await DioClient.instance
+      .get<dynamic>('/organizer/venues', queryParameters: {'limit': 5});
+  if (data is List) return data.cast<Map<String, dynamic>>();
+  final items =
+      (data as Map<String, dynamic>)['items'] as List? ?? [];
+  return items.cast<Map<String, dynamic>>();
+});
+
 // ---------------------------------------------------------------------------
 // Screen
 // ---------------------------------------------------------------------------
@@ -50,6 +60,7 @@ class OrganizerDashboardScreen extends ConsumerWidget {
     final walletAsync = ref.watch(_walletProvider);
     final eventsAsync = ref.watch(_recentEventsProvider);
     final payoutsAsync = ref.watch(_recentPayoutsProvider);
+    final venuesAsync = ref.watch(_myVenuesProvider);
     final userAsync = ref.watch(currentUserProvider);
     final isClubOwner = userAsync.valueOrNull?.role == 'ORGANIZER';
 
@@ -89,6 +100,7 @@ class OrganizerDashboardScreen extends ConsumerWidget {
           ref.invalidate(_walletProvider);
           ref.invalidate(_recentEventsProvider);
           ref.invalidate(_recentPayoutsProvider);
+          ref.invalidate(_myVenuesProvider);
         },
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 120),
@@ -242,6 +254,75 @@ class OrganizerDashboardScreen extends ConsumerWidget {
                         const SizedBox(width: 12),
                     itemBuilder: (_, i) =>
                         _EventCard(event: events[i], dark: dark),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 28),
+
+            // ── My Clubs & Venues ────────────────────────────────────────
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'My Clubs & Venues',
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: dark ? kDarkTextPrimary : kTextPrimary,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => context.push('/organizer/clubs'),
+                  child: Text(
+                    'See All',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: kPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            venuesAsync.when(
+              loading: () => SizedBox(
+                height: 110,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: 3,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (_, __) => Container(
+                    width: 180,
+                    decoration: BoxDecoration(
+                      color: dark ? kDarkSurface : kSurface,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                ),
+              ),
+              error: (e, _) => _ErrorCard(
+                message: 'Could not load venues',
+                onRetry: () => ref.invalidate(_myVenuesProvider),
+              ),
+              data: (venues) {
+                if (venues.isEmpty) {
+                  return _EmptyState(
+                    icon: Icons.location_city_rounded,
+                    message: 'No venues registered yet',
+                    action: 'Register your first venue',
+                    onAction: () => context.push('/organizer/clubs/new'),
+                    dark: dark,
+                  );
+                }
+                return SizedBox(
+                  height: 110,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: venues.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    itemBuilder: (_, i) => _VenueCard(venue: venues[i], dark: dark),
                   ),
                 );
               },
@@ -492,6 +573,109 @@ class _EventCard extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Venue Card (horizontal)
+// ---------------------------------------------------------------------------
+
+class _VenueCard extends StatelessWidget {
+  final Map<String, dynamic> venue;
+  final bool dark;
+
+  const _VenueCard({required this.venue, required this.dark});
+
+  @override
+  Widget build(BuildContext context) {
+    final photos = venue['photos'] as List?;
+    final coverUrl = photos != null && photos.isNotEmpty
+        ? (photos.first as Map<String, dynamic>)['url']?.toString()
+        : null;
+    final name = venue['name']?.toString() ?? 'Unnamed';
+    final city = venue['city']?.toString() ?? '';
+    final capacity = venue['capacity'];
+
+    return GestureDetector(
+      onTap: () => context.push('/organizer/clubs/${venue['id']?.toString() ?? ''}'),
+      child: Container(
+        width: 180,
+        decoration: BoxDecoration(
+          color: dark ? kDarkSurface : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: dark ? kDarkBorder : kBorder, width: 0.8),
+          boxShadow: const [
+            BoxShadow(color: kCardShadow, blurRadius: 8, offset: Offset(0, 2)),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Row(
+          children: [
+            // Cover image strip
+            SizedBox(
+              width: 72,
+              height: double.infinity,
+              child: coverUrl != null
+                  ? CachedNetworkImage(imageUrl: coverUrl, fit: BoxFit.cover)
+                  : Container(
+                      color: kPrimary.withValues(alpha: 0.12),
+                      child: const Icon(Icons.location_city_rounded, color: kPrimary, size: 28),
+                    ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      name,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: dark ? kDarkTextPrimary : kTextPrimary,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    if (city.isNotEmpty)
+                      Row(
+                        children: [
+                          Icon(Icons.location_on_rounded, size: 10, color: dark ? kDarkTextMuted : kTextMuted),
+                          const SizedBox(width: 2),
+                          Expanded(
+                            child: Text(
+                              city,
+                              style: GoogleFonts.inter(fontSize: 10, color: dark ? kDarkTextMuted : kTextMuted),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    if (capacity != null) ...[
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          Icon(Icons.people_rounded, size: 10, color: dark ? kDarkTextMuted : kTextMuted),
+                          const SizedBox(width: 2),
+                          Text(
+                            '$capacity',
+                            style: GoogleFonts.inter(fontSize: 10, color: dark ? kDarkTextMuted : kTextMuted),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ),
           ],

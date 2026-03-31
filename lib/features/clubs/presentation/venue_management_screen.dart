@@ -1,9 +1,15 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/app_snackbar.dart';
+import '../../../shared/widgets/red_button.dart';
 
 // ─── Providers ────────────────────────────────────────────────────────────────
 
@@ -75,7 +81,7 @@ class _VenueManagementScreenState extends ConsumerState<VenueManagementScreen>
   @override
   void initState() {
     super.initState();
-    _tab = TabController(length: 3, vsync: this);
+    _tab = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -122,6 +128,7 @@ class _VenueManagementScreenState extends ConsumerState<VenueManagementScreen>
             Tab(text: 'Nights'),
             Tab(text: 'Bookings'),
             Tab(text: 'Members'),
+            Tab(text: 'Edit'),
           ],
         ),
       ),
@@ -141,6 +148,14 @@ class _VenueManagementScreenState extends ConsumerState<VenueManagementScreen>
                 _NightsTab(venueId: widget.venueId),
                 _BookingsTab(venueId: widget.venueId),
                 _MembersTab(venueId: widget.venueId),
+                venueAsync.when(
+                  data: (v) => _EditTab(venueId: widget.venueId, venue: v, onSaved: () {
+                    ref.invalidate(_venueDetailProvider(widget.venueId));
+                    _tab.animateTo(0);
+                  }),
+                  loading: () => const Center(child: CircularProgressIndicator(color: kPrimary)),
+                  error: (_, __) => const Center(child: Text('Failed to load venue')),
+                ),
               ],
             ),
           ),
@@ -190,6 +205,337 @@ class _VenueHeader extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+// ─── Edit tab ─────────────────────────────────────────────────────────────────
+
+class _EditTab extends ConsumerStatefulWidget {
+  final String venueId;
+  final Map<String, dynamic> venue;
+  final VoidCallback onSaved;
+  const _EditTab({required this.venueId, required this.venue, required this.onSaved});
+
+  @override
+  ConsumerState<_EditTab> createState() => _EditTabState();
+}
+
+class _EditTabState extends ConsumerState<_EditTab> {
+  late final TextEditingController _nameCtrl;
+  late final TextEditingController _descCtrl;
+  late final TextEditingController _addressCtrl;
+  late final TextEditingController _cityCtrl;
+  late final TextEditingController _capacityCtrl;
+  late final TextEditingController _amenitiesCtrl;
+
+  final List<File> _newPhotos = [];
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final v = widget.venue;
+    _nameCtrl = TextEditingController(text: v['name']?.toString() ?? '');
+    _descCtrl = TextEditingController(text: v['description']?.toString() ?? '');
+    _addressCtrl = TextEditingController(text: v['address']?.toString() ?? '');
+    _cityCtrl = TextEditingController(text: v['city']?.toString() ?? '');
+    _capacityCtrl = TextEditingController(text: v['capacity']?.toString() ?? '');
+    final amenities = (v['amenities'] as List?)?.map((e) => e.toString()).join(', ') ?? '';
+    _amenitiesCtrl = TextEditingController(text: amenities);
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _descCtrl.dispose();
+    _addressCtrl.dispose();
+    _cityCtrl.dispose();
+    _capacityCtrl.dispose();
+    _amenitiesCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickPhotos() async {
+    final remaining = 5 - _newPhotos.length;
+    if (remaining <= 0) return;
+    final picker = ImagePicker();
+    final picked = await picker.pickMultiImage(imageQuality: 85, limit: remaining);
+    if (picked.isEmpty) return;
+    setState(() {
+      for (final xf in picked) {
+        if (_newPhotos.length < 5) _newPhotos.add(File(xf.path));
+      }
+    });
+  }
+
+  Future<void> _save() async {
+    if (_nameCtrl.text.trim().isEmpty) {
+      AppSnackbar.showError(context, 'Venue name is required');
+      return;
+    }
+    setState(() => _saving = true);
+    try {
+      final amenities = _amenitiesCtrl.text
+          .split(',')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+
+      await DioClient.instance.patch<dynamic>('/venues/${widget.venueId}', data: {
+        'name': _nameCtrl.text.trim(),
+        'description': _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+        'address': _addressCtrl.text.trim(),
+        'city': _cityCtrl.text.trim(),
+        'capacity': _capacityCtrl.text.isEmpty ? null : int.tryParse(_capacityCtrl.text),
+        'amenities': amenities,
+      });
+
+      if (_newPhotos.isNotEmpty) {
+        await Future.wait(_newPhotos.map((file) async {
+          final fd = FormData.fromMap({
+            'photo': await MultipartFile.fromFile(file.path),
+          });
+          await DioClient.instance.post<dynamic>('/venues/${widget.venueId}/upload-photo', data: fd);
+        }));
+      }
+
+      if (mounted) {
+        AppSnackbar.showSuccess(context, 'Venue updated');
+        widget.onSaved();
+      }
+    } catch (e) {
+      if (mounted) {
+        final msg = e is AppException ? e.message : 'Failed to save changes';
+        AppSnackbar.showError(context, msg);
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final existingPhotos = (widget.venue['photos'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+      children: [
+        // Existing photos
+        if (existingPhotos.isNotEmpty) ...[
+          _EditSection(
+            title: 'Current Photos',
+            dark: dark,
+            child: SizedBox(
+              height: 88,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: existingPhotos.length,
+                itemBuilder: (_, i) {
+                  final url = existingPhotos[i]['url']?.toString() ?? '';
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(url, width: 88, height: 88, fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            width: 88, height: 88,
+                            color: dark ? kDarkBorder : kBorder,
+                            child: const Icon(Icons.broken_image_rounded),
+                          )),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        // Add new photos
+        _EditSection(
+          title: 'Add Photos',
+          dark: dark,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 96,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    ..._newPhotos.asMap().entries.map((entry) => Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.file(entry.value, width: 88, height: 88, fit: BoxFit.cover),
+                          ),
+                          Positioned(
+                            top: 4, right: 4,
+                            child: GestureDetector(
+                              onTap: () => setState(() => _newPhotos.removeAt(entry.key)),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.6),
+                                  shape: BoxShape.circle,
+                                ),
+                                padding: const EdgeInsets.all(3),
+                                child: const Icon(Icons.close, size: 12, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+                    if (_newPhotos.length < 5)
+                      GestureDetector(
+                        onTap: _pickPhotos,
+                        child: Container(
+                          width: 88, height: 88,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: dark ? kDarkBorder : kBorder, width: 2),
+                            borderRadius: BorderRadius.circular(12),
+                            color: dark ? kDarkSurface : kSurface,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add_photo_alternate_rounded, color: dark ? kDarkTextMuted : kTextMuted, size: 22),
+                              const SizedBox(height: 4),
+                              Text('Add photo', style: GoogleFonts.inter(fontSize: 10, color: dark ? kDarkTextMuted : kTextMuted)),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text('New photos will be added to existing ones.',
+                  style: GoogleFonts.inter(fontSize: 11, color: dark ? kDarkTextMuted : kTextMuted)),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Venue info
+        _EditSection(
+          title: 'Venue Info',
+          dark: dark,
+          child: Column(
+            children: [
+              _EditField(label: 'Venue Name *', ctrl: _nameCtrl, hint: 'e.g. Altitude The Club'),
+              const SizedBox(height: 14),
+              _EditField(label: 'Description', ctrl: _descCtrl, hint: 'What makes your venue special?', maxLines: 3),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Location
+        _EditSection(
+          title: 'Location',
+          dark: dark,
+          child: Column(
+            children: [
+              _EditField(label: 'Address', ctrl: _addressCtrl, hint: 'Street address'),
+              const SizedBox(height: 14),
+              _EditField(label: 'City', ctrl: _cityCtrl, hint: 'e.g. Nairobi'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Details
+        _EditSection(
+          title: 'Details',
+          dark: dark,
+          child: Column(
+            children: [
+              _EditField(
+                label: 'Capacity',
+                ctrl: _capacityCtrl,
+                hint: 'Max guests',
+                inputType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              ),
+              const SizedBox(height: 14),
+              _EditField(label: 'Amenities', ctrl: _amenitiesCtrl, hint: 'Parking, VIP Lounge (comma separated)'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 32),
+
+        RedButton(label: 'Save Changes', onTap: _save, isLoading: _saving),
+      ],
+    );
+  }
+}
+
+class _EditSection extends StatelessWidget {
+  final String title;
+  final bool dark;
+  final Widget child;
+  const _EditSection({required this.title, required this.dark, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: dark ? kDarkSurface : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: dark ? kDarkBorder : kBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 13,
+              color: dark ? kDarkTextMuted : kTextMuted)),
+          const SizedBox(height: 14),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _EditField extends StatelessWidget {
+  final String label;
+  final TextEditingController ctrl;
+  final String? hint;
+  final int maxLines;
+  final TextInputType inputType;
+  final List<TextInputFormatter> inputFormatters;
+
+  const _EditField({
+    required this.label,
+    required this.ctrl,
+    this.hint,
+    this.maxLines = 1,
+    this.inputType = TextInputType.text,
+    this.inputFormatters = const [],
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: ctrl,
+          maxLines: maxLines,
+          keyboardType: inputType,
+          inputFormatters: inputFormatters,
+          style: GoogleFonts.inter(fontSize: 14),
+          decoration: InputDecoration(hintText: hint),
+        ),
+      ],
     );
   }
 }

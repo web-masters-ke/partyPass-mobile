@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/app_snackbar.dart';
@@ -26,6 +29,7 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
   final _capacityCtrl = TextEditingController();
   final _amenitiesCtrl = TextEditingController(); // comma-separated
 
+  final List<File> _photos = [];
   bool _submitting = false;
 
   @override
@@ -39,6 +43,23 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
     super.dispose();
   }
 
+  Future<void> _pickPhotos() async {
+    final picker = ImagePicker();
+    final remaining = 5 - _photos.length;
+    if (remaining <= 0) return;
+    final picked = await picker.pickMultiImage(imageQuality: 85, limit: remaining);
+    if (picked.isEmpty) return;
+    setState(() {
+      for (final xf in picked) {
+        if (_photos.length < 5) _photos.add(File(xf.path));
+      }
+    });
+  }
+
+  void _removePhoto(int index) {
+    setState(() => _photos.removeAt(index));
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _submitting = true);
@@ -50,7 +71,7 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
         .toList();
 
     try {
-      await DioClient.instance.post<dynamic>('/venues', data: {
+      final res = await DioClient.instance.post<dynamic>('/venues', data: {
         'name': _nameCtrl.text.trim(),
         'description': _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
         'address': _addressCtrl.text.trim(),
@@ -59,6 +80,20 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
         'capacity': _capacityCtrl.text.isEmpty ? null : int.tryParse(_capacityCtrl.text),
         'amenities': amenities,
       });
+
+      // Upload photos if any
+      if (_photos.isNotEmpty) {
+        final venueId = (res as Map<String, dynamic>?)?['id']?.toString();
+        if (venueId != null) {
+          await Future.wait(_photos.map((file) async {
+            final fd = FormData.fromMap({
+              'photo': await MultipartFile.fromFile(file.path),
+            });
+            await DioClient.instance.post<dynamic>('/venues/$venueId/upload-photo', data: fd);
+          }));
+        }
+      }
+
       if (mounted) {
         AppSnackbar.showSuccess(context, 'Venue registered successfully');
         context.pop(true); // return true = refresh list
@@ -91,6 +126,76 @@ class _CreateVenueScreenState extends ConsumerState<CreateVenueScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
           children: [
+            // Photos section
+            _Section(
+              title: 'Photos',
+              dark: dark,
+              children: [
+                SizedBox(
+                  height: 96,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      ..._photos.asMap().entries.map((entry) => Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.file(entry.value, width: 88, height: 88, fit: BoxFit.cover),
+                            ),
+                            Positioned(
+                              top: 4, right: 4,
+                              child: GestureDetector(
+                                onTap: () => _removePhoto(entry.key),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.6),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  padding: const EdgeInsets.all(3),
+                                  child: const Icon(Icons.close, size: 12, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )),
+                      if (_photos.length < 5)
+                        GestureDetector(
+                          onTap: _pickPhotos,
+                          child: Container(
+                            width: 88, height: 88,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: dark ? kDarkBorder : kBorder,
+                                width: 2,
+                                style: BorderStyle.solid,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              color: dark ? kDarkSurface : kSurface,
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add_photo_alternate_rounded, color: dark ? kDarkTextMuted : kTextMuted, size: 22),
+                                const SizedBox(height: 4),
+                                Text('Add photo', style: GoogleFonts.inter(fontSize: 10, color: dark ? kDarkTextMuted : kTextMuted)),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Up to 5 photos. First photo used as cover.',
+                  style: GoogleFonts.inter(fontSize: 11, color: dark ? kDarkTextMuted : kTextMuted),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
             _Section(
               title: 'Venue Info',
               dark: dark,
